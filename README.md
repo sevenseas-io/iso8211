@@ -3,7 +3,7 @@
 [![ci](https://github.com/sevenseas-io/iso8211/workflows/ci/badge.svg)](https://github.com/sevenseas-io/iso8211/actions?query=workflow%3Aci)
 [![license](https://img.shields.io/badge/license-MIT%20or%20Apache--2-brightgreen)](https://github.com/sevenseas-io/iso8211#license)
 [![version](https://img.shields.io/crates/v/iso8211.svg)](https://crates.io/crates/iso8211)
-[![docs.rs](https://docs.rs/spin/badge.svg)](https://docs.rs/iso8211/)
+[![docs](https://docs.rs/iso8211/badge.svg)](https://docs.rs/iso8211/)
 
 ISO 8211 data format library
 
