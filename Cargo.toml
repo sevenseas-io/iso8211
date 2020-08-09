@@ -1,0 +1,14 @@
+[package]
+authors = ["René Herrero Gómez <rene@sevenseas.io>"]
+categories = ["filesystem"]
+description = " ISO 8211 data format library "
+documentation = "https://docs.rs/iso8211"
+edition = "2018"
+keywords = ["iso8211", "iho", "s-57", "s-101"]
+license = "MIT OR Apache-2.0"
+name = "iso8211"
+readme = "README.md"
+repository = "https://github.com/sevenseas-io/iso8211"
+version = "0.1.0"
+
+[dependencies]
