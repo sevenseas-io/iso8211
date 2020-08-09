@@ -10,5 +10,6 @@ name = "iso8211"
 readme = "README.md"
 repository = "https://github.com/sevenseas-io/iso8211"
 version = "0.1.1-alpha.1"
+exclude = ["tests"]
 
 [dependencies]
