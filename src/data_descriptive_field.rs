@@ -138,33 +138,188 @@ pub(crate) mod tests {
     use crate::{DataDescriptiveField, ReadResult, Reader, FIELD_TERMINATOR, UNIT_TERMINATOR};
     use std::io::{BufReader, Cursor};
 
-    pub fn ascii_data_descriptive_field1() -> ReadResult<DataDescriptiveField> {
+    pub fn ascii_data_descriptive_field(index: usize) -> ReadResult<DataDescriptiveField> {
         let bytes = [
-            "0100;&   ISO 8211 Record Identifier".as_bytes(),
-            &[UNIT_TERMINATOR, UNIT_TERMINATOR],
-            " (I(5))".as_bytes(),
-            &[FIELD_TERMINATOR],
-        ]
-        .concat();
-        let buffer = Cursor::new(bytes);
-        let bufreader = BufReader::new(buffer);
-        let mut reader = Reader::new(bufreader);
-
-        let data_descriptive_field = DataDescriptiveField::read(&mut reader)?;
-        Ok(data_descriptive_field)
-    }
-
-    pub fn ascii_data_descriptive_field2() -> ReadResult<DataDescriptiveField> {
-        let bytes = [
-            "1600;&   Feature record identifier field".as_bytes(),
-            &[UNIT_TERMINATOR],
-            "RCNM!RCID!PRIM!GRUP!OBJL!RVER!RUIN".as_bytes(),
-            &[UNIT_TERMINATOR],
-            "(A(2),I(10),A(1),I(3),I(5),I(3),A(1))".as_bytes(),
-            &[FIELD_TERMINATOR],
-        ]
-        .concat();
-        let buffer = Cursor::new(bytes);
+            [
+                "0500;&   ISO 8211 Record Identifier".as_bytes(),
+                &[UNIT_TERMINATOR, UNIT_TERMINATOR],
+                "(b12)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "1600;&   Feature record identifier field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "RCNM!RCID!PRIM!GRUP!OBJL!RVER!RUIN".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(b11,b14,2b11,2b12,b11)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "1600;&   Feature object identifier field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "AGEN!FIDN!FIDS".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(b12,b14,b12)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "2600;&-A Feature record attribute field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "*ATTL!ATVL".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(b12,A)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "2600;&%/@Feature record national attribute field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "*ATTL!ATVL".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(b12,A)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "1600;&   Feature record to feature object pointer control field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "FFUI!FFIX!NFPT".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(b11,2b12)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "2600;&   Feature record to feature object pointer field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "*LNAM!RIND!COMT".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(B(64),b11,A)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "1600;&   Feature record to spatial record pointer control field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "FSUI!FSIX!NSPT".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(b11,2b12)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "2600;&   Feature record to spatial record pointer field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "*NAME!ORNT!USAG!MASK".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(B(40),3b11)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "1600;&   Vector record identifier field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "RCNM!RCID!RVER!RUIN".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(b11,b14,b12,b11)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "2600;&   Vector record attribute field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "*ATTL!ATVL".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(b12,A)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "1600;&   Vector record pointer control field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "VPUI!VPIX!NVPT".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(b11,2b12)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "2600;&   Vector record pointer field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "*NAME!ORNT!USAG!TOPI!MASK".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(B(40),4b11)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "1600;&   Coordinate control field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "CCUI!CCIX!CCNC".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(b11,2b12)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "2500;&   2-D Coordinate field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "*YCOO!XCOO".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(2b24)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "2500;&   3-D Coordinate field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "*YCOO!XCOO!VE3D".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(3b24)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "1600;&   Arc/Curve definition field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "ATYP!SURF!ORDR!RESO!FPMF".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(3b11,2b14)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "2500;&   Arc coordinate field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "STPT!CTPT!ENPT*YCOO!XCOO".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(2b24)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "2500;&   Ellipse coordinate field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "STPT!CTPT!ENPT!CDPM!CDPR*YCOO!XCOO".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(2b24)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+            [
+                "2500;&   Curve coordinate field".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "*YCOO!XCOO".as_bytes(),
+                &[UNIT_TERMINATOR],
+                "(2b24)".as_bytes(),
+                &[FIELD_TERMINATOR],
+            ]
+            .concat(),
+        ];
+        let buffer = Cursor::new(&bytes[index]);
         let bufreader = BufReader::new(buffer);
         let mut reader = Reader::new(bufreader);
 
@@ -182,16 +337,22 @@ pub(crate) mod tests {
         }
         let test_cases = [
             TestCase {
-                data_descriptive_field: ascii_data_descriptive_field1(),
+                data_descriptive_field: ascii_data_descriptive_field(0),
                 field_name: String::from("ISO 8211 Record Identifier"),
                 array_descriptor: String::from(""),
-                format_controls: String::from(" (I(5))"),
+                format_controls: String::from("(b12)"),
             },
             TestCase {
-                data_descriptive_field: ascii_data_descriptive_field2(),
+                data_descriptive_field: ascii_data_descriptive_field(1),
                 field_name: String::from("Feature record identifier field"),
                 array_descriptor: String::from("RCNM!RCID!PRIM!GRUP!OBJL!RVER!RUIN"),
-                format_controls: String::from("(A(2),I(10),A(1),I(3),I(5),I(3),A(1))"),
+                format_controls: String::from("(b11,b14,2b11,2b12,b11)"),
+            },
+            TestCase {
+                data_descriptive_field: ascii_data_descriptive_field(2),
+                field_name: String::from("Feature object identifier field"),
+                array_descriptor: String::from("AGEN!FIDN!FIDS"),
+                format_controls: String::from("(b12,b14,b12)"),
             },
         ];
 
