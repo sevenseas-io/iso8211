@@ -183,23 +183,22 @@ impl DDRLeader {
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::{DDRLeader, Reader};
-
+pub(crate) mod tests {
+    use crate::{DDRLeader, ReadResult, Reader};
     use std::io::{BufReader, Cursor};
 
-    #[test]
-    fn test_ddr_leader() {
-        // arrange
+    pub fn ascii_ddr_leader() -> ReadResult<DDRLeader> {
         let bytes = "019003LE1 0900319 ! 5504".as_bytes();
         let buffer = Cursor::new(bytes);
         let bufreader = BufReader::new(buffer);
         let mut reader = Reader::new(bufreader);
+        DDRLeader::read(&mut reader)
+    }
 
-        // act
-        let target = DDRLeader::read(&mut reader);
+    #[test]
+    fn test_ddr_leader() {
+        let target = ascii_ddr_leader();
 
-        // assert
         assert_eq!(target.is_ok(), true);
 
         let target = target.unwrap();

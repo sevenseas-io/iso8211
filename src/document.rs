@@ -7,6 +7,9 @@ use std::path::Path;
 #[derive(Debug)]
 pub struct Document {
     ddr_leader: DDRLeader,
+    directory: Directory,
+    file_control_field: FileControlField,
+    data_descriptive_fields: Vec<DataDescriptiveField>,
 }
 
 impl Document {
@@ -22,7 +25,7 @@ impl Document {
         let entries = directory.entries();
 
         //FIXME: what's this for???
-        let _file_control_field = FileControlField::read(&mut reader, &ddr_leader, &entries[0]);
+        let file_control_field = FileControlField::read(&mut reader, &ddr_leader, &entries[0])?;
 
         let mut data_descriptive_fields: Vec<DataDescriptiveField> =
             Vec::with_capacity(entries.len() - 1);
@@ -31,7 +34,12 @@ impl Document {
             data_descriptive_fields.push(ddf);
         }
 
-        Ok(Document { ddr_leader })
+        Ok(Document {
+            ddr_leader: ddr_leader,
+            directory: directory,
+            file_control_field: file_control_field,
+            data_descriptive_fields: data_descriptive_fields,
+        })
     }
 
     pub fn ddr_leader(&self) -> &DDRLeader {
