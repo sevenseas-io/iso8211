@@ -97,11 +97,7 @@ impl FileControlField {
 }
 
 impl DataDescriptiveField {
-    pub fn read<T: Read + Seek>(
-        reader: &mut Reader<T>,
-        leader: &DDRLeader,
-        directory_entry: &DirectoryEntry,
-    ) -> ReadResult<DataDescriptiveField> {
+    pub fn read<T: Read + Seek>(reader: &mut Reader<T>) -> ReadResult<DataDescriptiveField> {
         // Data structure code
         let data_structure = reader.read_char()?;
         let data_structure = DataStructure::from_char(data_structure)?;

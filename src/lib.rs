@@ -2,22 +2,22 @@ mod document;
 pub use document::Document;
 
 mod directory;
-use directory::Directory;
+pub use directory::Directory;
 
 mod directory_entry;
-use directory_entry::DirectoryEntry;
+pub use directory_entry::DirectoryEntry;
 
 mod field;
-use field::{DataDescriptiveField, FieldControls, FileControlField, TagPair};
+pub use field::{DataDescriptiveField, FieldControls, FileControlField, TagPair};
 
 mod leader;
-use leader::DDRLeader;
+pub use leader::DDRLeader;
 
 mod errors;
-use errors::ReadError;
+pub use errors::ReadError;
 
 mod reader;
-use reader::{ReadResult, Reader};
+pub use reader::{ReadResult, Reader};
 
 /// decimal value for ISO8211 field terminator
 const FIELD_TERMINATOR: u8 = 0x1e;

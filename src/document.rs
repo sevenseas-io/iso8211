@@ -26,8 +26,8 @@ impl Document {
 
         let mut data_descriptive_fields: Vec<DataDescriptiveField> =
             Vec::with_capacity(entries.len() - 1);
-        for i in 1..entries.len() {
-            let ddf = DataDescriptiveField::read(&mut reader, &ddr_leader, &entries[i])?;
+        for _ in 1..entries.len() {
+            let ddf = DataDescriptiveField::read(&mut reader)?;
             data_descriptive_fields.push(ddf);
         }
 
