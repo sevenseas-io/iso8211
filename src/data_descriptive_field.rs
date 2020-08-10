@@ -26,10 +26,11 @@ impl DataStructure {
 
 #[derive(Debug)]
 pub enum DataType {
-    CharacterString,
-    ImplicitPoint,
-    Binary,
-    Mixed,
+    CharacterString = 0,
+    ImplicitPoint = 1,
+    ExplicitPoint = 2,
+    Binary = 5,
+    Mixed = 6,
 }
 
 impl DataType {
@@ -37,6 +38,7 @@ impl DataType {
         match value {
             '0' => Ok(DataType::CharacterString),
             '1' => Ok(DataType::ImplicitPoint),
+            '2' => Ok(DataType::ExplicitPoint),
             '5' => Ok(DataType::Binary),
             '6' => Ok(DataType::Mixed),
             e => Err(ReadError::ParseError(format!(
@@ -60,7 +62,8 @@ impl LexicalLevel {
         match value.as_ref() {
             "   " => Ok(LexicalLevel::Level0),
             "-A " => Ok(LexicalLevel::Level1),
-            "%/A" => Ok(LexicalLevel::Level2),
+            "%/@" => Ok(LexicalLevel::Level2),
+            //FIXME: Find out what this lexical level is
             "%/G" => Ok(LexicalLevel::UnknownG),
             e => Err(ReadError::ParseError(format!(
                 "Invalid Truncated Escape Sequence: {}",
@@ -329,40 +332,12 @@ pub(crate) mod tests {
 
     #[test]
     fn test_data_descriptive_fields() {
-        struct TestCase {
-            data_descriptive_field: ReadResult<DataDescriptiveField>,
-            field_name: String,
-            array_descriptor: String,
-            format_controls: String,
-        }
-        let test_cases = [
-            TestCase {
-                data_descriptive_field: ascii_data_descriptive_field(0),
-                field_name: String::from("ISO 8211 Record Identifier"),
-                array_descriptor: String::from(""),
-                format_controls: String::from("(b12)"),
-            },
-            TestCase {
-                data_descriptive_field: ascii_data_descriptive_field(1),
-                field_name: String::from("Feature record identifier field"),
-                array_descriptor: String::from("RCNM!RCID!PRIM!GRUP!OBJL!RVER!RUIN"),
-                format_controls: String::from("(b11,b14,2b11,2b12,b11)"),
-            },
-            TestCase {
-                data_descriptive_field: ascii_data_descriptive_field(2),
-                field_name: String::from("Feature object identifier field"),
-                array_descriptor: String::from("AGEN!FIDN!FIDS"),
-                format_controls: String::from("(b12,b14,b12)"),
-            },
-        ];
-
+        let mut test_cases: Vec<ReadResult<DataDescriptiveField>> = Vec::with_capacity(20);
+        for i in 0..20{
+            test_cases.push(ascii_data_descriptive_field(i));
+        } 
         for i in &test_cases {
-            assert_eq!(i.data_descriptive_field.is_ok(), true);
-
-            let target = i.data_descriptive_field.as_ref().unwrap();
-            assert_eq!(target.field_name, i.field_name);
-            assert_eq!(target.array_descriptor, i.array_descriptor);
-            assert_eq!(target.format_controls, i.format_controls);
+            assert_eq!(i.is_ok(), true);
         }
     }
 }
