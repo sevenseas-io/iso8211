@@ -1,5 +1,4 @@
-use crate::errors::ReadError;
-use crate::reader::{Reader, ReadResult};
+use crate::{ReadError, ReadResult, Reader};
 
 use std::io::{Read, Seek};
 
@@ -41,82 +40,39 @@ pub struct DDRLeader {
     /// Application Indicator
     application_indicator: char,
     /// Field Control Length
-    pub(crate) field_control_length: u8,
+    field_control_length: u8,
     /// Base Address Of Field Area
     base_address: u64,
     /// Extended Character Set Indicator
     character_set: String,
     /// Entry Map
-    pub(crate) entry_map: EntryMap,
-}
-
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub(crate) struct EntryMap {
-    /// Size Of Field Length Field
-    pub(crate) field_length: u8,
-    /// Size Of Field Position Field
-    pub(crate) field_position: u8,
-    /// Reserved
-    reserved: char,
-    /// Size Of Field Tag Field
-    pub(crate) field_tag: u8,
+    entry_map: EntryMap,
 }
 
 impl DDRLeader {
-    pub(crate) fn read_ddr_leader<T: Read + Seek>(
-        reader: &mut Reader<T>,
-    ) -> ReadResult<DDRLeader> {
-        let record_length = reader.read_u64_str(5)?;
-        let interchange_level = reader.read_u8_str(1)?;
-        if interchange_level != 3 {
-            return Err(ReadError::new(
-                "Invalid Interchange Level found in position {}: {}",
-            ));
-        }
-        let leader_identifier = reader.read_char()?;
-        if leader_identifier != 'L' {
-            return Err(ReadError::new(
-                "Invalid Leader Identifier found in position {}: {}",
-            ));
-        }
+    pub fn field_control_length(&self) -> &u8 {
+        &self.field_control_length
+    }
 
-        let code_extension = reader.read_char()?;
-        if code_extension != 'E' {
-            return Err(ReadError::new(
-                "Invalid In Line Code Extension Indicator found in position {}: {}",
-            ));
-        }
+    pub fn entry_map(&self) -> &EntryMap {
+        &self.entry_map
+    }
+}
 
-        let version_number = reader.read_u8_str(1)?;
-        if version_number != 1 {
-            return Err(ReadError::new(
-                "Invalid Verison Number found in position {}: {}",
-            ));
-        }
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub struct EntryMap {
+    /// Size Of Field Length Field
+    field_length: u8,
+    /// Size Of Field Position Field
+    field_position: u8,
+    /// Reserved
+    reserved: char,
+    /// Size Of Field Tag Field
+    field_tag: u8,
+}
 
-        let application_indicator = reader.read_char()?;
-        if application_indicator != ' ' {
-            return Err(ReadError::new(
-                "Invalid Application Indicator found in position {}: {}",
-            ));
-        }
-
-        let field_control_length = reader.read_u8_str(2)?;
-        if field_control_length != 09 {
-            return Err(ReadError::new(
-                "Invalid Field Control Length found in position {}: {}",
-            ));
-        }
-
-        let base_address = reader.read_u64_str(5)?;
-
-        let character_set = reader.read_str(3)?;
-        if character_set != " ! " {
-            return Err(ReadError::new(
-                "Invalid Extended Character Set Indicator found in position {}: {}",
-            ));
-        }
-
+impl EntryMap {
+    pub fn read<T: Read + Seek>(reader: &mut Reader<T>) -> ReadResult<EntryMap> {
         let field_length = reader.read_u8_str(1)?;
 
         let field_position = reader.read_u8_str(1)?;
@@ -125,12 +81,91 @@ impl DDRLeader {
 
         let field_tag = reader.read_u8_str(1)?;
 
-        let entry_map = EntryMap {
+        Ok(EntryMap {
             field_length,
             field_position,
             reserved,
             field_tag,
-        };
+        })
+    }
+
+    /// Size Of Field Length Field
+    pub fn field_length(&self) -> &u8 {
+        &self.field_length
+    }
+
+    /// Size Of Field Position Field
+    pub fn field_position(&self) -> &u8 {
+        &self.field_position
+    }
+
+    /// Size Of Field Tag Field
+    pub fn field_tag(&self) -> &u8 {
+        &self.field_tag
+    }
+}
+
+impl DDRLeader {
+    pub fn read<T: Read + Seek>(reader: &mut Reader<T>) -> ReadResult<DDRLeader> {
+        let record_length = reader.read_u64_str(5)?;
+        let interchange_level = reader.read_u8_str(1)?;
+        if interchange_level != 3 {
+            return Err(ReadError::ParseError(format!(
+                "Invalid Interchange Level: {}",
+                interchange_level
+            )));
+        }
+        let leader_identifier = reader.read_char()?;
+        if leader_identifier != 'L' {
+            return Err(ReadError::ParseError(format!(
+                "Invalid Leader Identifier: {}",
+                leader_identifier
+            )));
+        }
+
+        let code_extension = reader.read_char()?;
+        if code_extension != 'E' {
+            return Err(ReadError::ParseError(format!(
+                "Invalid In Line Code Extension Indicator: {}",
+                code_extension
+            )));
+        }
+
+        let version_number = reader.read_u8_str(1)?;
+        if version_number != 1 {
+            return Err(ReadError::ParseError(format!(
+                "Invalid Verison Number: {}",
+                version_number
+            )));
+        }
+
+        let application_indicator = reader.read_char()?;
+        if application_indicator != ' ' {
+            return Err(ReadError::ParseError(format!(
+                "Invalid Application Indicator: {}",
+                application_indicator
+            )));
+        }
+
+        let field_control_length = reader.read_u8_str(2)?;
+        if field_control_length != 09 {
+            return Err(ReadError::ParseError(format!(
+                "Invalid Field Control Length: {}",
+                field_control_length
+            )));
+        }
+
+        let base_address = reader.read_u64_str(5)?;
+
+        let character_set = reader.read_str(3)?;
+        if character_set != " ! " {
+            return Err(ReadError::ParseError(format!(
+                "Invalid Extended Character Set Indicator: {}",
+                character_set
+            )));
+        }
+
+        let entry_map = EntryMap::read(reader)?;
 
         Ok(DDRLeader {
             record_length,
@@ -149,8 +184,7 @@ impl DDRLeader {
 
 #[cfg(test)]
 mod tests {
-    use super::DDRLeader;
-    use crate::reader::Reader;
+    use crate::{DDRLeader, Reader};
 
     use std::io::{BufReader, Cursor};
 
@@ -163,7 +197,7 @@ mod tests {
         let mut reader = Reader::new(bufreader);
 
         // act
-        let target = DDRLeader::read_ddr_leader(&mut reader);
+        let target = DDRLeader::read(&mut reader);
 
         // assert
         assert_eq!(target.is_ok(), true);

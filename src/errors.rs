@@ -1,59 +1,43 @@
-use std::error::Error;
-use std::fmt;
+use std::io::Error;
+use std::num::ParseIntError;
+use std::string::FromUtf8Error;
 
 #[derive(Debug)]
-pub struct ReadError {
-    message: String,
+pub enum ReadError {
+    ParseError(String),
+    IoError(Error),
+    Utf8Error(FromUtf8Error),
+    IntError(ParseIntError),
 }
 
-impl ReadError {
-    pub(crate) fn new(msg: &str) -> ReadError {
-        ReadError {
-            message: msg.to_string(),
-        }
+impl From<Error> for ReadError {
+    fn from(error: Error) -> Self {
+        ReadError::IoError(error)
     }
 }
 
-impl fmt::Display for ReadError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.message)
+impl From<String> for ReadError {
+    fn from(error: String) -> Self {
+        ReadError::ParseError(error)
     }
 }
 
-impl Error for ReadError {
-    fn description(&self) -> &str {
-        &self.message
+impl From<FromUtf8Error> for ReadError {
+    fn from(error: FromUtf8Error) -> Self {
+        ReadError::Utf8Error(error)
     }
 }
 
-impl From<std::io::Error> for ReadError {
-    fn from(error: std::io::Error) -> Self {
-        ReadError {
-            message: error.to_string(),
-        }
+impl From<ParseIntError> for ReadError {
+    fn from(error: ParseIntError) -> Self {
+        ReadError::IntError(error)
     }
 }
 
-impl From<std::string::FromUtf8Error> for ReadError {
-    fn from(error: std::string::FromUtf8Error) -> Self {
-        ReadError {
-            message: error.to_string(),
-        }
-    }
-}
-
-impl From<std::num::ParseIntError> for ReadError {
-    fn from(error: std::num::ParseIntError) -> Self {
-        ReadError {
-            message: error.to_string(),
-        }
-    }
-}
-
-impl From<std::str::Utf8Error> for ReadError {
-    fn from(error: std::str::Utf8Error) -> Self {
-        ReadError {
-            message: error.to_string(),
-        }
-    }
-}
+// impl From<std::str::Utf8Error> for ReadError {
+//     fn from(error: std::str::Utf8Error) -> Self {
+//         ReadError {
+//             message: error.to_string(),
+//         }
+//     }
+// }

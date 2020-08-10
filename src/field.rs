@@ -1,23 +1,22 @@
-use crate::directory::DirectoryEntry;
-use crate::errors::ReadError;
-use crate::leader::DDRLeader;
-use crate::reader::{ReadResult, Reader};
-use crate::{FIELD_TERMINATOR, UNIT_TERMINATOR};
+use crate::{
+    DDRLeader, DirectoryEntry, ReadError, ReadResult, Reader, FIELD_TERMINATOR, UNIT_TERMINATOR,
+};
+
 use std::io::{Read, Seek};
 
 #[derive(Debug)]
-pub(crate) struct FieldControlField {
-    pub(crate) tag_pairs: Vec<TagPair>,
+pub struct FileControlField {
+    tag_pairs: Vec<TagPair>,
 }
 
 #[derive(Debug)]
-pub(crate) struct TagPair {
-    pub(crate) parent: String,
-    pub(crate) child: String,
+pub struct TagPair {
+    parent: String,
+    child: String,
 }
 
 #[derive(Debug)]
-pub(crate) struct DataDescriptiveField {
+pub struct DataDescriptiveField {
     field_controls: FieldControls,
     field_name: String,
     array_descriptor: String,
@@ -25,7 +24,7 @@ pub(crate) struct DataDescriptiveField {
 }
 
 #[derive(Debug)]
-pub(crate) struct FieldControls {
+pub struct FieldControls {
     data_structure: DataStructure,
     data_type: DataType,
     escape_sequence: LexicalLevel,
@@ -55,29 +54,30 @@ enum LexicalLevel {
     UnknownG,
 }
 
-impl FieldControlField {
-    pub(crate) fn read<T: Read + Seek>(
+impl FileControlField {
+    pub fn read<T: Read + Seek>(
         reader: &mut Reader<T>,
         leader: &DDRLeader,
         directory_entry: &DirectoryEntry,
-    ) -> ReadResult<FieldControlField> {
-        let field_controls = reader.read_str(leader.field_control_length as usize)?;
+    ) -> ReadResult<FileControlField> {
+        let field_controls = reader.read_str(*leader.field_control_length() as usize)?;
         if field_controls != "0000;&   " {
-            return Err(ReadError::new(
-                "Invalid Field Controls value for the Field Control Field at position {}: {}",
-            ));
+            return Err(ReadError::ParseError(format!(
+                "Invalid Field Controls: {}",
+                field_controls
+            )));
         }
 
         // we should have a unit terminator here
         if reader.read_u8()? != UNIT_TERMINATOR {
-            return Err(ReadError::new(
-                "Did not find a unit terminator after the Field Controls value of the Field Control Field at position {}: {}",
-            ));
+            return Err(ReadError::ParseError(String::from(
+                "Did not find a unit terminator after the Field Controls",
+            )));
         }
 
         // calculate the number of tag pairs
-        let tag_length = leader.entry_map.field_tag as usize;
-        let count = (directory_entry.field_length as usize - 11) / (2 * tag_length);
+        let tag_length = *leader.entry_map().field_tag() as usize;
+        let count = (*directory_entry.field_length() as usize - 11) / (2 * tag_length);
         let mut tag_pairs: Vec<TagPair> = Vec::with_capacity(count);
         for _ in 0..count {
             let parent = reader.read_str(tag_length)?;
@@ -87,17 +87,17 @@ impl FieldControlField {
 
         // it should all end with a filed terminator here
         if reader.read_u8()? != FIELD_TERMINATOR {
-            return Err(ReadError::new(
-                        "Did not find a field terminator at the end of the Field Control Field at position {}: {}",
-                    ));
+            return Err(ReadError::ParseError(String::from(
+                "Did not find a field terminator after the Field Controls",
+            )));
         }
 
-        Ok(FieldControlField { tag_pairs })
+        Ok(FileControlField { tag_pairs })
     }
 }
 
 impl DataDescriptiveField {
-    pub(crate) fn read<T: Read + Seek>(
+    pub fn read<T: Read + Seek>(
         reader: &mut Reader<T>,
         leader: &DDRLeader,
         directory_entry: &DirectoryEntry,
@@ -111,16 +111,20 @@ impl DataDescriptiveField {
         let data_type = DataType::from_char(data_type)?;
 
         // Auxiliary controls must be "00"
-        if reader.read_str(2)? != "00" {
-            return Err(ReadError::new(
-                "Invalid Auxiliary Controls at position {}: {}",
-            ));
+        let auxiliary_controls = reader.read_str(2)?;
+        if auxiliary_controls != "00" {
+            return Err(ReadError::ParseError(format!(
+                "Invalid Auxiliary Controls: {}",
+                auxiliary_controls
+            )));
         }
         // Printable graphics must be ";&"
-        if reader.read_str(2)? != ";&" {
-            return Err(ReadError::new(
-                "Invalid Printable Graphics at position {}: {}",
-            ));
+        let printable_graphics = reader.read_str(2)?;
+        if printable_graphics != ";&" {
+            return Err(ReadError::ParseError(format!(
+                "Invalid Printable Graphics: {}",
+                printable_graphics
+            )));
         }
         // Truncated escape sequence
         let escape_sequence = reader.read_str(3)?;
@@ -151,9 +155,10 @@ impl DataStructure {
             '1' => Ok(DataStructure::LinearStructure),
             '2' => Ok(DataStructure::MultiDimensionalStructure),
             '3' => Ok(DataStructure::Unknown3),
-            _ => Err(ReadError::new(
-                "Invalid Data Structure Code at position {}: {}",
-            )),
+            e => Err(ReadError::ParseError(format!(
+                "Invalid Data Structure Code: {}",
+                e
+            ))),
         }
     }
 }
@@ -165,7 +170,10 @@ impl DataType {
             '1' => Ok(DataType::ImplicitPoint),
             '5' => Ok(DataType::Binary),
             '6' => Ok(DataType::Mixed),
-            _ => Err(ReadError::new("Invalid Data Type Code at position {}: {}")),
+            e => Err(ReadError::ParseError(format!(
+                "Invalid Data Type Code: {}",
+                e
+            ))),
         }
     }
 }
@@ -177,9 +185,10 @@ impl LexicalLevel {
             "-A " => Ok(LexicalLevel::Level1),
             "%/A" => Ok(LexicalLevel::Level2),
             "%/G" => Ok(LexicalLevel::UnknownG),
-            _ => Err(ReadError::new(
-                "Invalid Truncated Escape Sequence at position {}: {}",
-            )),
+            e => Err(ReadError::ParseError(format!(
+                "Invalid Truncated Escape Sequence: {}",
+                e
+            ))),
         }
     }
 }

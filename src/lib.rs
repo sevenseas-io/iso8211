@@ -2,14 +2,25 @@ mod document;
 pub use document::Document;
 
 mod directory;
-mod leader;
-mod field;
+use directory::Directory;
 
-pub mod errors;
+mod directory_entry;
+use directory_entry::DirectoryEntry;
+
+mod field;
+use field::{DataDescriptiveField, FieldControls, FileControlField, TagPair};
+
+mod leader;
+use leader::DDRLeader;
+
+mod errors;
+use errors::ReadError;
+
 mod reader;
+use reader::{ReadResult, Reader};
 
 /// decimal value for ISO8211 field terminator
-pub(crate) const FIELD_TERMINATOR: u8 = 0x1e;
+const FIELD_TERMINATOR: u8 = 0x1e;
 
 /// decimal value for ISO8211 unit terminator
-pub(crate) const UNIT_TERMINATOR: u8 = 0x1f;
+const UNIT_TERMINATOR: u8 = 0x1f;
