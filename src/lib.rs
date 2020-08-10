@@ -10,8 +10,10 @@ pub use directory_entry::DirectoryEntry;
 mod file_control_field;
 pub use file_control_field::{FileControlField, TagPair};
 
-mod field;
-pub use field::{DataDescriptiveField, FieldControls};
+mod data_descriptive_field;
+pub use data_descriptive_field::{
+    DataDescriptiveField, DataStructure, DataType, FieldControls, LexicalLevel,
+};
 
 mod leader;
 pub use leader::DDRLeader;

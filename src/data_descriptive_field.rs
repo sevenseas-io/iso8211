@@ -2,7 +2,7 @@ use crate::{ReadError, ReadResult, Reader};
 use std::io::{Read, Seek};
 
 #[derive(Debug)]
-enum DataStructure {
+pub enum DataStructure {
     SingleDataItem,
     LinearStructure,
     MultiDimensionalStructure,
@@ -25,7 +25,7 @@ impl DataStructure {
 }
 
 #[derive(Debug)]
-enum DataType {
+pub enum DataType {
     CharacterString,
     ImplicitPoint,
     Binary,
@@ -48,7 +48,7 @@ impl DataType {
 }
 
 #[derive(Debug)]
-enum LexicalLevel {
+pub enum LexicalLevel {
     Level0,
     Level1,
     Level2,
