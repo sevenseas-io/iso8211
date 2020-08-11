@@ -9,7 +9,7 @@ pub fn assert_read(path: &str) -> Document {
 
 #[test]
 #[allow(non_snake_case)]
-fn tests_s_64__2_1_1() {
+fn read_s_64__2_1_1() {
     let files = [
         "tests/s_64/2_1_1/CATALOG.031",
         "tests/s_64/2_1_1/GB4X0000.000",
