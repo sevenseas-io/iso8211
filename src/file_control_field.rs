@@ -1,5 +1,5 @@
 use crate::{
-    DDRLeader, DirectoryEntry, ReadError, ReadResult, Reader, FIELD_TERMINATOR, UNIT_TERMINATOR,
+    Leader, DirectoryEntry, ReadError, ReadResult, Reader, FIELD_TERMINATOR, UNIT_TERMINATOR,
 };
 use std::io::{Read, Seek};
 
@@ -17,7 +17,7 @@ pub struct FileControlField {
 impl FileControlField {
     pub fn read<T: Read + Seek>(
         reader: &mut Reader<T>,
-        leader: &DDRLeader,
+        leader: &Leader,
         directory_entry: &DirectoryEntry,
     ) -> ReadResult<FileControlField> {
         let field_controls = reader.read_str(*leader.field_control_length() as usize)?;
@@ -60,12 +60,12 @@ impl FileControlField {
 pub(crate) mod tests {
     use crate::directory::tests::ascii_ddr_directory;
     use crate::{
-        DDRLeader, Directory, FileControlField, ReadResult, Reader, FIELD_TERMINATOR,
+        Leader, Directory, FileControlField, ReadResult, Reader, FIELD_TERMINATOR,
         UNIT_TERMINATOR,
     };
     use std::io::{BufReader, Cursor};
 
-    pub fn ascii_file_control_field() -> ReadResult<(DDRLeader, Directory, FileControlField)> {
+    pub fn ascii_file_control_field() -> ReadResult<(Leader, Directory, FileControlField)> {
         let data = ascii_ddr_directory()?;
 
         let bytes = [

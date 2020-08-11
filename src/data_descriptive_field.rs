@@ -1,4 +1,4 @@
-use crate::{ReadError, ReadResult, Reader};
+use crate::{DirectoryEntry, ReadError, ReadResult, Reader};
 use std::io::{Read, Seek};
 
 #[derive(Debug)]
@@ -89,7 +89,10 @@ pub struct DataDescriptiveField {
 }
 
 impl DataDescriptiveField {
-    pub fn read<T: Read + Seek>(reader: &mut Reader<T>) -> ReadResult<DataDescriptiveField> {
+    pub fn read<T: Read + Seek>(
+        reader: &mut Reader<T>,
+        entry: &DirectoryEntry,
+    ) -> ReadResult<DataDescriptiveField> {
         // Data structure code
         let data_structure = reader.read_char()?;
         let data_structure = DataStructure::from_char(data_structure)?;
@@ -138,10 +141,16 @@ impl DataDescriptiveField {
 
 #[cfg(test)]
 pub(crate) mod tests {
-    use crate::{DataDescriptiveField, ReadResult, Reader, FIELD_TERMINATOR, UNIT_TERMINATOR};
+    use crate::directory::tests::ascii_ddr_directory;
+    use crate::{
+        DataDescriptiveField, Directory, ReadResult, Reader, FIELD_TERMINATOR, UNIT_TERMINATOR,
+    };
     use std::io::{BufReader, Cursor};
 
-    pub fn ascii_data_descriptive_field(index: usize) -> ReadResult<DataDescriptiveField> {
+    pub fn ascii_data_descriptive_field(
+        index: usize,
+        directory: &Directory,
+    ) -> ReadResult<DataDescriptiveField> {
         let bytes = [
             [
                 "0500;&   ISO 8211 Record Identifier".as_bytes(),
@@ -326,18 +335,19 @@ pub(crate) mod tests {
         let bufreader = BufReader::new(buffer);
         let mut reader = Reader::new(bufreader);
 
-        let data_descriptive_field = DataDescriptiveField::read(&mut reader)?;
+        let entry = &directory.entries()[index];
+
+        let data_descriptive_field = DataDescriptiveField::read(&mut reader, &entry)?;
         Ok(data_descriptive_field)
     }
 
     #[test]
     fn test_data_descriptive_fields() {
-        let mut test_cases: Vec<ReadResult<DataDescriptiveField>> = Vec::with_capacity(20);
-        for i in 0..20{
-            test_cases.push(ascii_data_descriptive_field(i));
-        } 
-        for i in &test_cases {
-            assert_eq!(i.is_ok(), true);
+        let directory = ascii_ddr_directory().unwrap();
+
+        for i in 0..20 {
+            let target = ascii_data_descriptive_field(i, &directory.1);
+            assert_eq!(target.is_ok(), true);
         }
     }
 }

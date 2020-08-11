@@ -1,15 +1,12 @@
-use crate::{DDRLeader, DataDescriptiveField, Directory, FileControlField, ReadResult, Reader};
+use crate::{DataDescriptiveRecord, DataRecord, ReadResult, Reader};
 
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
-#[derive(Debug)]
 pub struct Document {
-    ddr_leader: DDRLeader,
-    directory: Directory,
-    file_control_field: FileControlField,
-    data_descriptive_fields: Vec<DataDescriptiveField>,
+    data_descriptive_record: DataDescriptiveRecord,
+    data_records: Vec<DataRecord>,
 }
 
 impl Document {
@@ -18,31 +15,14 @@ impl Document {
         let buffer = BufReader::new(Box::new(file));
         let mut reader = Reader::new(buffer);
 
-        let ddr_leader = DDRLeader::read(&mut reader)?;
+        let data_descriptive_record = DataDescriptiveRecord::read(&mut reader)?;
 
-        let directory = Directory::read(&mut reader, &ddr_leader)?;
-
-        let entries = directory.entries();
-
-        //FIXME: what's this for???
-        let file_control_field = FileControlField::read(&mut reader, &ddr_leader, &entries[0])?;
-
-        let mut data_descriptive_fields: Vec<DataDescriptiveField> =
-            Vec::with_capacity(entries.len() - 1);
-        for _ in 1..entries.len() {
-            let ddf = DataDescriptiveField::read(&mut reader)?;
-            data_descriptive_fields.push(ddf);
-        }
-
+        let data_record = DataRecord::read(&mut reader);
+        let data_records = Vec::new();
+        
         Ok(Document {
-            ddr_leader: ddr_leader,
-            directory: directory,
-            file_control_field: file_control_field,
-            data_descriptive_fields: data_descriptive_fields,
+            data_descriptive_record: data_descriptive_record,
+            data_records: data_records,
         })
-    }
-
-    pub fn ddr_leader(&self) -> &DDRLeader {
-        &self.ddr_leader
     }
 }

@@ -1,4 +1,4 @@
-use crate::{DDRLeader, DirectoryEntry, ReadResult, Reader, FIELD_TERMINATOR};
+use crate::{Leader, DirectoryEntry, ReadResult, Reader, FIELD_TERMINATOR};
 use std::io::{Read, Seek};
 
 #[derive(Debug)]
@@ -9,7 +9,7 @@ pub struct Directory {
 impl Directory {
     pub fn read<T: Read + Seek>(
         reader: &mut Reader<T>,
-        leader: &DDRLeader,
+        leader: &Leader,
     ) -> ReadResult<Directory> {
         let mut entries: Vec<DirectoryEntry> = Vec::new();
 
@@ -32,10 +32,10 @@ impl Directory {
 #[cfg(test)]
 pub(crate) mod tests {
     use crate::leader::tests::ascii_ddr_leader;
-    use crate::{DDRLeader, Directory, ReadResult, Reader, FIELD_TERMINATOR};
+    use crate::{Leader, Directory, ReadResult, Reader, FIELD_TERMINATOR};
     use std::io::{BufReader, Cursor};
 
-    pub fn ascii_ddr_directory() -> ReadResult<(DDRLeader, Directory)> {
+    pub fn ascii_ddr_directory() -> ReadResult<(Leader, Directory)> {
         let leader = ascii_ddr_leader()?;
 
         let bytes = [

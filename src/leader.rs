@@ -1,5 +1,4 @@
 use crate::{ReadError, ReadResult, Reader};
-
 use std::io::{Read, Seek};
 
 /*
@@ -26,17 +25,17 @@ RP      Sub-entry name                  Len     Content
 
 /// The structure of the DR leader
 #[derive(Debug, PartialEq)]
-pub struct DDRLeader {
+pub struct Leader {
     /// Record Length
     record_length: u64,
     /// Interchange Level
-    interchange_level: u8,
+    interchange_level: char,
     /// Leader Identifier
     leader_identifier: char,
     /// In Line Code Extension Indicator
     code_extension: char,
     /// Version Number
-    version_number: u8,
+    version_number: char,
     /// Application Indicator
     application_indicator: char,
     /// Field Control Length
@@ -49,7 +48,7 @@ pub struct DDRLeader {
     entry_map: EntryMap,
 }
 
-impl DDRLeader {
+impl Leader {
     pub fn field_control_length(&self) -> &u8 {
         &self.field_control_length
     }
@@ -105,18 +104,26 @@ impl EntryMap {
     }
 }
 
-impl DDRLeader {
-    pub fn read<T: Read + Seek>(reader: &mut Reader<T>) -> ReadResult<DDRLeader> {
+impl Leader {
+    pub fn read_ddr<T: Read + Seek>(reader: &mut Reader<T>) -> ReadResult<Leader> {
+        Leader::read(reader, true)
+    }
+
+    pub fn read_dr<T: Read + Seek>(reader: &mut Reader<T>) -> ReadResult<Leader> {
+        Leader::read(reader, false)
+    }
+
+    fn read<T: Read + Seek>(reader: &mut Reader<T>, is_ddr: bool) -> ReadResult<Leader> {
         let record_length = reader.read_u64_str(5)?;
-        let interchange_level = reader.read_u8_str(1)?;
-        if interchange_level != 3 {
+        let interchange_level = reader.read_char()?;
+        if (is_ddr && interchange_level != '3') || (!is_ddr && interchange_level != ' ') {
             return Err(ReadError::ParseError(format!(
                 "Invalid Interchange Level: {}",
                 interchange_level
             )));
         }
         let leader_identifier = reader.read_char()?;
-        if leader_identifier != 'L' {
+        if (is_ddr && leader_identifier != 'L') || (!is_ddr && leader_identifier != 'D') {
             return Err(ReadError::ParseError(format!(
                 "Invalid Leader Identifier: {}",
                 leader_identifier
@@ -124,15 +131,15 @@ impl DDRLeader {
         }
 
         let code_extension = reader.read_char()?;
-        if code_extension != 'E' {
+        if (is_ddr && code_extension != 'E') || (!is_ddr && code_extension != ' ') {
             return Err(ReadError::ParseError(format!(
                 "Invalid In Line Code Extension Indicator: {}",
                 code_extension
             )));
         }
 
-        let version_number = reader.read_u8_str(1)?;
-        if version_number != 1 {
+        let version_number = reader.read_char()?;
+        if (is_ddr && version_number != '1') || (!is_ddr && version_number != ' ') {
             return Err(ReadError::ParseError(format!(
                 "Invalid Verison Number: {}",
                 version_number
@@ -147,18 +154,26 @@ impl DDRLeader {
             )));
         }
 
-        let field_control_length = reader.read_u8_str(2)?;
-        if field_control_length != 09 {
+        let field_control_length_value = reader.read_str(2)?;
+        if (is_ddr && field_control_length_value != "09")
+            || (!is_ddr && field_control_length_value != "  ")
+        {
             return Err(ReadError::ParseError(format!(
                 "Invalid Field Control Length: {}",
-                field_control_length
+                field_control_length_value
             )));
+        }
+        let field_control_length: u8;
+        if is_ddr {
+            field_control_length = field_control_length_value.parse::<u8>()?;
+        } else {
+            field_control_length = 0;
         }
 
         let base_address = reader.read_u64_str(5)?;
 
         let character_set = reader.read_str(3)?;
-        if character_set != " ! " {
+        if (is_ddr && character_set != " ! ") || (!is_ddr && character_set != "   ") {
             return Err(ReadError::ParseError(format!(
                 "Invalid Extended Character Set Indicator: {}",
                 character_set
@@ -167,7 +182,7 @@ impl DDRLeader {
 
         let entry_map = EntryMap::read(reader)?;
 
-        Ok(DDRLeader {
+        Ok(Leader {
             record_length,
             interchange_level,
             leader_identifier,
@@ -184,15 +199,15 @@ impl DDRLeader {
 
 #[cfg(test)]
 pub(crate) mod tests {
-    use crate::{DDRLeader, ReadResult, Reader};
+    use crate::{Leader, ReadResult, Reader};
     use std::io::{BufReader, Cursor};
 
-    pub fn ascii_ddr_leader() -> ReadResult<DDRLeader> {
+    pub fn ascii_ddr_leader() -> ReadResult<Leader> {
         let bytes = "019003LE1 0900319 ! 5504".as_bytes();
         let buffer = Cursor::new(bytes);
         let bufreader = BufReader::new(buffer);
         let mut reader = Reader::new(bufreader);
-        DDRLeader::read(&mut reader)
+        Leader::read_ddr(&mut reader)
     }
 
     #[test]
@@ -203,11 +218,35 @@ pub(crate) mod tests {
 
         let target = target.unwrap();
         assert_eq!(target.record_length, 01900);
-        assert_eq!(target.interchange_level, 3);
+        assert_eq!(target.interchange_level, '3');
         assert_eq!(target.leader_identifier, 'L');
         assert_eq!(target.entry_map.field_length, 5);
         assert_eq!(target.entry_map.field_position, 5);
         assert_eq!(target.entry_map.reserved, '0');
         assert_eq!(target.entry_map.field_tag, 4);
+    }
+
+    pub fn ascii_dr_leader(index: usize) -> ReadResult<Leader> {
+        let bytes = [
+            "00197 D     00109   5504".as_bytes(),
+            "00088 D     00067   5504".as_bytes(),
+        ];
+        let buffer = Cursor::new(bytes[index]);
+        let bufreader = BufReader::new(buffer);
+        let mut reader = Reader::new(bufreader);
+        Leader::read_dr(&mut reader)
+    }
+
+    #[test]
+    fn test_dr_leader() {
+        for i in 0..2 {
+            let target = ascii_dr_leader(i);
+
+            assert_eq!(target.is_ok(), true);
+
+            let target = target.unwrap();
+            assert_eq!(target.interchange_level, ' ');
+            assert_eq!(target.leader_identifier, 'D');
+        }
     }
 }

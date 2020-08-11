@@ -1,4 +1,4 @@
-use crate::{DDRLeader, ReadResult, Reader};
+use crate::{Leader, ReadResult, Reader};
 use std::io::{Read, Seek};
 
 #[derive(Debug)]
@@ -11,7 +11,7 @@ pub struct DirectoryEntry {
 impl DirectoryEntry {
     pub fn read<T: Read + Seek>(
         reader: &mut Reader<T>,
-        leader: &DDRLeader,
+        leader: &Leader,
     ) -> ReadResult<DirectoryEntry> {
         let entry_map = leader.entry_map();
         let field_tag = reader.read_str(*entry_map.field_tag() as usize)?;
