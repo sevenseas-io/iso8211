@@ -1,4 +1,7 @@
-use crate::{DataDescriptiveField, Directory, FileControlField, Leader, ReadResult, Reader};
+use crate::{
+    ddr::{DataDescriptiveField, Directory, FileControlField, Leader},
+    ReadResult, Reader,
+};
 use std::io::{Read, Seek};
 
 #[derive(Debug)]
@@ -32,5 +35,9 @@ impl DataDescriptiveRecord {
             file_control_field: file_control_field,
             data_descriptive_fields: data_descriptive_fields,
         })
+    }
+
+    pub fn leader(&self) -> &Leader {
+        &self.leader
     }
 }

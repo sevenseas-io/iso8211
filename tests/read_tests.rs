@@ -1,7 +1,7 @@
-use iso8211::Document;
+use iso8211::DataDescriptiveFile;
 
-pub fn assert_read(path: &str) -> Document {
-    match Document::read(path) {
+pub fn assert_read(path: &str) -> DataDescriptiveFile {
+    match DataDescriptiveFile::read(path) {
         Ok(d) => d,
         Err(e) => panic!(e),
     }

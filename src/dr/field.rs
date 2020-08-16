@@ -1,4 +1,4 @@
-use crate::{DirectoryEntry, ReadError, ReadResult, Reader};
+use crate::{dr::DirectoryEntry, error::ReadError, ReadResult, Reader};
 use std::io::{Read, Seek};
 
 pub struct DataField {}

@@ -1,4 +1,4 @@
-use crate::{ReadError, ReadResult, Reader};
+use crate::{error::ReadError, ReadResult, Reader};
 use std::io::{Read, Seek};
 
 /*
@@ -49,6 +49,10 @@ pub struct Leader {
 }
 
 impl Leader {
+    pub fn record_length(&self) -> &u64 {
+        &self.record_length
+    }
+
     pub fn field_control_length(&self) -> &u8 {
         &self.field_control_length
     }
@@ -199,7 +203,7 @@ impl Leader {
 
 #[cfg(test)]
 pub(crate) mod tests {
-    use crate::{Leader, ReadResult, Reader};
+    use crate::{leader::Leader, ReadResult, Reader};
     use std::io::{BufReader, Cursor};
 
     pub fn ascii_ddr_leader() -> ReadResult<Leader> {

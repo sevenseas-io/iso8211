@@ -1,4 +1,6 @@
-use crate::{DirectoryEntry, Leader, ReadResult, Reader, FIELD_TERMINATOR};
+use crate::{
+    directory_entry::DirectoryEntry, leader::Leader, ReadResult, Reader, FIELD_TERMINATOR,
+};
 use std::io::{Read, Seek};
 
 #[derive(Debug)]
@@ -29,7 +31,7 @@ impl Directory {
 #[cfg(test)]
 pub(crate) mod tests {
     use crate::leader::tests::ascii_ddr_leader;
-    use crate::{Directory, Leader, ReadResult, Reader, FIELD_TERMINATOR};
+    use crate::{directory::Directory, leader::Leader, ReadResult, Reader, FIELD_TERMINATOR};
     use std::io::{BufReader, Cursor};
 
     pub fn ascii_ddr_directory() -> ReadResult<(Leader, Directory)> {

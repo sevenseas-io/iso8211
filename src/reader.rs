@@ -1,4 +1,4 @@
-use crate::{ReadError, FIELD_TERMINATOR, UNIT_TERMINATOR};
+use crate::{error::ReadError, FIELD_TERMINATOR, UNIT_TERMINATOR};
 
 use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::result::Result;

@@ -1,4 +1,4 @@
-use crate::{DataField, Directory, Leader, ReadResult, Reader};
+use crate::{dr::DataField, dr::Directory, dr::Leader, ReadResult, Reader};
 use std::io::{Read, Seek};
 
 pub struct DataRecord {

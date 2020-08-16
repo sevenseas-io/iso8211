@@ -1,4 +1,4 @@
-use crate::{Leader, ReadResult, Reader};
+use crate::{leader::Leader, ReadResult, Reader};
 use std::io::{Read, Seek};
 
 #[derive(Debug)]

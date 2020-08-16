@@ -1,4 +1,4 @@
-use crate::{DirectoryEntry, ReadError, ReadResult, Reader};
+use crate::{ddr::DirectoryEntry, error::ReadError, ReadResult, Reader};
 use std::io::{Read, Seek};
 
 #[derive(Debug)]
@@ -143,7 +143,7 @@ impl DataDescriptiveField {
 pub(crate) mod tests {
     use crate::directory::tests::ascii_ddr_directory;
     use crate::{
-        DataDescriptiveField, Directory, ReadResult, Reader, FIELD_TERMINATOR, UNIT_TERMINATOR,
+        ddr::DataDescriptiveField, ddr::Directory, ReadResult, Reader, FIELD_TERMINATOR, UNIT_TERMINATOR,
     };
     use std::io::{BufReader, Cursor};
 
