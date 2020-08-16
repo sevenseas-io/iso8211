@@ -21,9 +21,9 @@ impl DataRecord {
         }
 
         Ok(DataRecord {
-            leader: leader,
-            directory: directory,
-            data_fields: data_fields,
+            leader,
+            directory,
+            data_fields,
         })
     }
 }

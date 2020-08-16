@@ -20,8 +20,8 @@ impl DataDescriptiveFile {
         let data_record = DataRecord::read(&mut reader);
         let data_records = Vec::new();
         Ok(DataDescriptiveFile {
-            data_descriptive_record: data_descriptive_record,
-            data_records: data_records,
+            data_descriptive_record,
+            data_records,
         })
     }
 

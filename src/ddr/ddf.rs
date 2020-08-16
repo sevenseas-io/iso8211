@@ -143,7 +143,8 @@ impl DataDescriptiveField {
 pub(crate) mod tests {
     use crate::directory::tests::ascii_ddr_directory;
     use crate::{
-        ddr::DataDescriptiveField, ddr::Directory, ReadResult, Reader, FIELD_TERMINATOR, UNIT_TERMINATOR,
+        ddr::DataDescriptiveField, ddr::Directory, ReadResult, Reader, FIELD_TERMINATOR,
+        UNIT_TERMINATOR,
     };
     use std::io::{BufReader, Cursor};
 

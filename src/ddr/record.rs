@@ -30,10 +30,10 @@ impl DataDescriptiveRecord {
         }
 
         Ok(DataDescriptiveRecord {
-            leader: leader,
-            directory: directory,
-            file_control_field: file_control_field,
-            data_descriptive_fields: data_descriptive_fields,
+            leader,
+            directory,
+            file_control_field,
+            data_descriptive_fields,
         })
     }
 
