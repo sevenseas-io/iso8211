@@ -11,4 +11,3 @@ pub use fcf::{FileControlField, TagPair};
 
 mod record;
 pub use record::DataDescriptiveRecord;
-
