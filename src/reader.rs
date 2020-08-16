@@ -51,8 +51,7 @@ impl<T: Read + Seek> Reader<T> {
         while {
             self.buffer.read_exact(&mut buf)?;
             buf[0] != FIELD_TERMINATOR
-        }
-        {
+        } {
             bytes.push(buf[0]);
         }
         let s = String::from_utf8(bytes)?;
@@ -65,8 +64,7 @@ impl<T: Read + Seek> Reader<T> {
         while {
             self.buffer.read_exact(&mut buf)?;
             buf[0] != UNIT_TERMINATOR
-        }
-        {
+        } {
             bytes.push(buf[0]);
         }
         let s = String::from_utf8(bytes)?;

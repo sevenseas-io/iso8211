@@ -19,7 +19,6 @@ impl Document {
 
         let data_record = DataRecord::read(&mut reader);
         let data_records = Vec::new();
-        
         Ok(Document {
             data_descriptive_record: data_descriptive_record,
             data_records: data_records,

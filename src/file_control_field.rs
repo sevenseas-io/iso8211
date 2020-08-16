@@ -1,5 +1,5 @@
 use crate::{
-    Leader, DirectoryEntry, ReadError, ReadResult, Reader, FIELD_TERMINATOR, UNIT_TERMINATOR,
+    DirectoryEntry, Leader, ReadError, ReadResult, Reader, FIELD_TERMINATOR, UNIT_TERMINATOR,
 };
 use std::io::{Read, Seek};
 
@@ -60,8 +60,7 @@ impl FileControlField {
 pub(crate) mod tests {
     use crate::directory::tests::ascii_ddr_directory;
     use crate::{
-        Leader, Directory, FileControlField, ReadResult, Reader, FIELD_TERMINATOR,
-        UNIT_TERMINATOR,
+        Directory, FileControlField, Leader, ReadResult, Reader, FIELD_TERMINATOR, UNIT_TERMINATOR,
     };
     use std::io::{BufReader, Cursor};
 
