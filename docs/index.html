@@ -48,10 +48,7 @@
         </nav>
 
         <div role="main" class="container">
-            <h1>Seven Seas - ISO 8211</h1>
-            <p>
-                <img src="img/ship.png" class="img-fluid" alt="Ship Logo">
-            </p>
+            <p id="readme" class="text-justify"></p>
         </div>
 
         <footer class="page-footer fixed-bottom">
@@ -69,6 +66,13 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
         integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
         crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        fetch('https://raw.githubusercontent.com/sevenseas-io/iso8211/master/README.md')
+            .then(response => response.text())
+            .then(result => document.getElementById('readme').innerHTML =
+                marked(result));
+    </script>
 </body>
 
 </html>
