@@ -91,7 +91,8 @@ pub struct DataDescriptiveField {
 impl DataDescriptiveField {
     pub fn read<T: Read + Seek>(
         reader: &mut Reader<T>,
-        entry: &DirectoryEntry,
+        //FIXME: Find out how directory entry should be used
+        _entry: &DirectoryEntry,
     ) -> ReadResult<DataDescriptiveField> {
         // Data structure code
         let data_structure = reader.read_char()?;

@@ -15,13 +15,21 @@ impl<T: Read + Seek> Reader<T> {
         Reader { buffer }
     }
 
+    pub fn is_eof(&mut self) -> ReadResult<bool> {
+        let mut buf: [u8; 1] = [0; 1];
+        let bytes = self.buffer.read(&mut buf)?;
+        if bytes == 0 {
+            Ok(true)
+        } else {
+            self.buffer.seek(SeekFrom::Current(-1))?;
+            Ok(false)
+        }
+    }
+
     pub fn peek_byte(&mut self) -> ReadResult<u8> {
         let result = self.read_u8();
-        match result {
-            Ok(_) => {
-                self.buffer.seek(SeekFrom::Current(-1))?;
-            }
-            Err(_) => {}
+        if result.is_ok() {
+            self.buffer.seek(SeekFrom::Current(-1))?;
         }
         result
     }

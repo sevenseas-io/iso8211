@@ -17,8 +17,11 @@ impl DataDescriptiveFile {
 
         let data_descriptive_record = DataDescriptiveRecord::read(&mut reader)?;
 
-        let data_record = DataRecord::read(&mut reader);
-        let data_records = Vec::new();
+        let mut data_records = Vec::new();
+        while !reader.is_eof()? {
+            let data_record = DataRecord::read(&mut reader)?;
+            data_records.push(data_record);
+        }
         Ok(DataDescriptiveFile {
             data_descriptive_record,
             data_records,
